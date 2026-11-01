@@ -99,19 +99,19 @@
             </div>
             <div class="grid gap-4 sm:grid-cols-2">
                 <div class="reveal card-hover rounded-3xl border border-cream-line bg-cream p-6" style="--i:1">
-                    <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gold-soft text-gold-deep"><i class="fa-solid fa-mosque"></i></span>
+                    <span class="icon-wrap flex h-12 w-12 items-center justify-center rounded-2xl bg-gold-soft text-gold-deep"><i class="fa-solid fa-mosque"></i></span>
                     <p class="mt-4 font-semibold">Shariah-first</p><p class="mt-1 text-sm leading-6 text-muted">Free from riba, gharar and maisir — built on mutual help.</p>
                 </div>
                 <div class="reveal card-hover rounded-3xl border border-cream-line bg-cream p-6 sm:mt-8" style="--i:2">
-                    <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gold-soft text-gold-deep"><i class="fa-solid fa-comments"></i></span>
+                    <span class="icon-wrap flex h-12 w-12 items-center justify-center rounded-2xl bg-gold-soft text-gold-deep"><i class="fa-solid fa-comments"></i></span>
                     <p class="mt-4 font-semibold">Honest advice</p><p class="mt-1 text-sm leading-6 text-muted">A licensed agent reviews your needs before any quotation.</p>
                 </div>
                 <div class="reveal card-hover rounded-3xl border border-cream-line bg-cream p-6" style="--i:3">
-                    <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gold-soft text-gold-deep"><i class="fa-solid fa-mobile-screen"></i></span>
+                    <span class="icon-wrap flex h-12 w-12 items-center justify-center rounded-2xl bg-gold-soft text-gold-deep"><i class="fa-solid fa-mobile-screen"></i></span>
                     <p class="mt-4 font-semibold">Fully online</p><p class="mt-1 text-sm leading-6 text-muted">Apply, upload documents and pay from your phone.</p>
                 </div>
                 <div class="reveal card-hover rounded-3xl border border-cream-line bg-cream p-6 sm:mt-8" style="--i:4">
-                    <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gold-soft text-gold-deep"><i class="fa-solid fa-shield-heart"></i></span>
+                    <span class="icon-wrap flex h-12 w-12 items-center justify-center rounded-2xl bg-gold-soft text-gold-deep"><i class="fa-solid fa-shield-heart"></i></span>
                     <p class="mt-4 font-semibold">Family focused</p><p class="mt-1 text-sm leading-6 text-muted">Protection, Hibah, medical and education in one place.</p>
                 </div>
             </div>
@@ -133,11 +133,11 @@
             </div>
 
             <div class="mt-14 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                <article th:each="product, iter : ${products}" class="reveal card card-hover flex flex-col p-6" th:style="'--i:' + ${iter.index % 3}">
+                <article th:each="product, iter : ${products}" class="reveal card card-hover tilt flex flex-col p-6" th:style="'--i:' + ${iter.index % 3}">
                     <a th:href="@{/products/{id}(id=${product.id})}" class="block">
                         <img th:if="${product.imageUrl != null && !#strings.isEmpty(product.imageUrl)}" th:src="${product.imageUrl}" alt="" class="mb-5 aspect-[16/9] w-full rounded-2xl object-cover">
                         <div class="flex items-start justify-between gap-3">
-                            <span th:if="${product.imageUrl == null || #strings.isEmpty(product.imageUrl)}" class="flex h-14 w-14 items-center justify-center rounded-2xl bg-gold-soft text-2xl text-gold-deep"><i class="fa-solid" th:classappend="${product.iconClass}"></i></span>
+                            <span th:if="${product.imageUrl == null || #strings.isEmpty(product.imageUrl)}" class="icon-wrap flex h-14 w-14 items-center justify-center rounded-2xl bg-gold-soft text-2xl text-gold-deep"><i class="fa-solid" th:classappend="${product.iconClass}"></i></span>
                             <span th:if="${product.featured}" class="chip chip-gold ml-auto uppercase tracking-[0.15em]">Popular</span>
                         </div>
                         <p class="mt-6 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted" th:text="${product.categoryLabel}">Category</p>

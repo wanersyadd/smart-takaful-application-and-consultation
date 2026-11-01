@@ -11,18 +11,42 @@
     <p th:if="${flashMessage}" class="rounded-2xl bg-ok-soft p-4 text-ok" th:text="${flashMessage}">Saved</p>
     <div class="flex flex-wrap items-end justify-between gap-4">
         <div>
-            <h1 class="fade-up text-3xl font-semibold tracking-tight">Application Management</h1>
-            <p class="fade-up mt-1 text-muted" style="--d:.1s">Review submitted applications, request corrections, and create quotations.</p>
+            <p class="eyebrow fade-up">Application Management · <span th:text="${#temporals.format(#temporals.createNow(), 'EEE, d MMM yyyy')}">Mon, 2 Nov 2026</span></p>
+            <h1 class="fade-up mt-1 text-3xl font-semibold tracking-tight" style="--d:.05s"><span th:text="${greeting + ', ' + adminName}">Good morning, admin</span> 👋</h1>
+            <p class="fade-up mt-1 text-muted" style="--d:.1s" th:switch="${stats.toReview}">
+                <span th:case="0">You're all caught up — no applications waiting for review.</span>
+                <span th:case="1">1 application is waiting for your review.</span>
+                <span th:case="*" th:text="${stats.toReview + ' applications are waiting for your review.'}">3 applications are waiting for your review.</span>
+            </p>
         </div>
         <label class="fade-up relative w-full max-w-xs" style="--d:.15s"><i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-sm text-muted"></i><input id="app-search" class="field !rounded-full !py-2.5 pl-11" placeholder="Search customer or product…" aria-label="Search applications"></label>
     </div>
 
-    <section class="grid grid-cols-2 gap-4 xl:grid-cols-5">
-        <div class="reveal card p-5"><div class="flex items-center justify-between text-sm text-muted">Total<span class="flex h-9 w-9 items-center justify-center rounded-xl bg-cream-deep"><i class="fa-solid fa-layer-group"></i></span></div><p class="mt-3 text-3xl font-semibold" th:attr="data-count=${totalApplications}" th:text="${totalApplications}">0</p></div>
-        <div class="reveal card p-5" style="--i:1"><div class="flex items-center justify-between text-sm text-muted">Submitted / Review<span class="flex h-9 w-9 items-center justify-center rounded-xl bg-gold-soft text-gold-deep"><i class="fa-solid fa-inbox"></i></span></div><p class="mt-3 text-3xl font-semibold" th:attr="data-count=${submittedApplications}" th:text="${submittedApplications}">0</p></div>
-        <div class="reveal card p-5" style="--i:2"><div class="flex items-center justify-between text-sm text-muted">Needs Info<span class="flex h-9 w-9 items-center justify-center rounded-xl bg-warn-soft text-warn"><i class="fa-solid fa-rotate-left"></i></span></div><p class="mt-3 text-3xl font-semibold" th:attr="data-count=${needsInfoApplications}" th:text="${needsInfoApplications}">0</p></div>
-        <div class="reveal card p-5" style="--i:3"><div class="flex items-center justify-between text-sm text-muted">Quoted / Payment<span class="flex h-9 w-9 items-center justify-center rounded-xl bg-info-soft text-info"><i class="fa-solid fa-file-invoice"></i></span></div><p class="mt-3 text-3xl font-semibold" th:attr="data-count=${quotedApplications}" th:text="${quotedApplications}">0</p></div>
-        <div class="reveal card p-5" style="--i:4"><div class="flex items-center justify-between text-sm text-muted">Paid / Closed<span class="flex h-9 w-9 items-center justify-center rounded-xl bg-ok-soft text-ok"><i class="fa-solid fa-circle-check"></i></span></div><p class="mt-3 text-3xl font-semibold" th:attr="data-count=${paidApplications}" th:text="${paidApplications}">0</p></div>
+    <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div class="reveal card card-hover p-5">
+            <div class="flex items-center justify-between text-sm text-muted">To review<span class="flex h-9 w-9 items-center justify-center rounded-xl bg-gold-soft text-gold-deep"><i class="fa-solid fa-inbox"></i></span></div>
+            <p class="mt-3 text-3xl font-semibold" th:attr="data-count=${stats.toReview}" th:text="${stats.toReview}">0</p>
+            <p th:if="${stats.overdueReviews > 0}" class="mt-1 text-xs text-warn"><i class="fa-solid fa-clock mr-1"></i><span th:text="${stats.overdueReviews + ' waiting over 2 days'}">1 waiting over 2 days</span></p>
+            <p th:unless="${stats.overdueReviews > 0}" class="mt-1 text-xs text-muted"><span th:text="${needsInfoApplications}">0</span> waiting on customer corrections</p>
+        </div>
+        <div class="reveal card card-hover p-5" style="--i:1">
+            <div class="flex items-center justify-between text-sm text-muted">Quoted, awaiting payment<span class="flex h-9 w-9 items-center justify-center rounded-xl bg-info-soft text-info"><i class="fa-solid fa-file-invoice"></i></span></div>
+            <p class="mt-3 text-3xl font-semibold" th:attr="data-count=${stats.awaitingPayment}" th:text="${stats.awaitingPayment}">0</p>
+            <p class="mt-1 text-xs text-muted" th:text="${'RM ' + #numbers.formatDecimal(stats.pendingAmount, 1, 'COMMA', 2, 'POINT') + ' pending'}">RM 0.00 pending</p>
+        </div>
+        <div class="reveal card card-hover p-5" style="--i:2">
+            <div class="flex items-center justify-between text-sm text-muted">Paid this month<span class="flex h-9 w-9 items-center justify-center rounded-xl bg-ok-soft text-ok"><i class="fa-solid fa-circle-check"></i></span></div>
+            <p class="mt-3 text-3xl font-semibold" th:text="${'RM ' + #numbers.formatDecimal(stats.paidThisMonth, 1, 'COMMA', 2, 'POINT')}">RM 0.00</p>
+            <p th:if="${stats.paidChangePercent != null}" class="mt-1 text-xs" th:classappend="${stats.paidChangePercent >= 0} ? 'text-ok' : 'text-warn'">
+                <i class="fa-solid mr-1" th:classappend="${stats.paidChangePercent >= 0} ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'"></i><span th:text="${(stats.paidChangePercent >= 0 ? '+' : '') + stats.paidChangePercent + '% vs ' + stats.lastMonthName}">+0% vs October</span>
+            </p>
+            <p th:unless="${stats.paidChangePercent != null}" class="mt-1 text-xs text-muted" th:text="${paidApplications + (paidApplications == 1 ? ' application' : ' applications') + ' paid or closed in total'}">0 applications paid or closed in total</p>
+        </div>
+        <div class="reveal card card-hover p-5" style="--i:3">
+            <div class="flex items-center justify-between text-sm text-muted">Plan Finder used<span class="flex h-9 w-9 items-center justify-center rounded-xl bg-ink text-gold"><i class="fa-solid fa-wand-magic-sparkles"></i></span></div>
+            <p class="mt-3 text-3xl font-semibold" th:attr="data-count=${stats.planFinderUsed}" th:text="${stats.planFinderUsed}">0</p>
+            <p class="mt-1 text-xs text-muted" th:text="${stats.planFinderConverted + ' became applications or consultations'}">0 became applications or consultations</p>
+        </div>
     </section>
 
     <div class="grid min-w-0 grid-cols-1 gap-6 xl:grid-cols-[1.6fr,1fr]">
@@ -40,13 +64,20 @@
             <div th:if="${#lists.isEmpty(applications)}" class="border-t border-cream-line p-12 text-center text-muted">No applications yet. New customer submissions will appear here.</div>
             <div th:if="${!#lists.isEmpty(applications)}" class="overflow-x-auto">
                 <table class="mobile-card-table w-full text-sm">
-                    <thead class="table-head"><tr><th class="px-5 py-3 font-medium">Customer</th><th class="px-5 py-3 font-medium">Product</th><th class="px-5 py-3 font-medium">Status</th><th class="px-5 py-3 font-medium">Created</th><th class="px-5 py-3"></th></tr></thead>
+                    <thead class="table-head"><tr><th class="px-5 py-3 font-medium">Customer</th><th class="px-5 py-3 font-medium">Plan</th><th class="px-5 py-3 font-medium">Status</th><th class="px-5 py-3 font-medium">Submitted</th><th class="px-5 py-3"></th></tr></thead>
                     <tbody class="divide-y divide-cream-line">
                         <tr th:each="app : ${applications}" class="app-row row-hover" th:attr="data-status=${app.status},data-search=${#strings.toLowerCase(app.applicantFullName + ' ' + app.email + ' ' + app.product.name)}">
-                            <td class="px-5 py-4" data-label="Customer"><div class="min-w-0"><p class="font-medium" th:text="${app.applicantFullName}">Applicant</p><p class="truncate text-xs text-muted" th:text="${app.email}">Email</p></div></td>
-                            <td class="px-5 py-4" data-label="Product" th:text="${app.product.name}">Product</td>
+                            <td class="px-5 py-4" data-label="Customer" th:with="parts=${#strings.arraySplit(#strings.trim(app.applicantFullName), ' ')},fromFinder=${stats.planFinderApplicationIds.contains(app.id)}">
+                                <div class="flex min-w-0 items-center gap-3">
+                                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold" th:classappend="${fromFinder} ? 'bg-gold-soft text-gold-deep' : 'bg-cream-deep'" th:text="${#strings.toUpperCase(#strings.substring(parts[0], 0, 1) + (#arrays.length(parts) > 1 ? #strings.substring(parts[#arrays.length(parts) - 1], 0, 1) : ''))}">AR</span>
+                                    <div class="min-w-0"><p class="font-medium" th:text="${app.applicantFullName}">Applicant</p>
+                                        <p th:if="${fromFinder}" class="text-xs text-muted"><i class="fa-solid fa-wand-magic-sparkles mr-1 text-gold-deep"></i>via Plan Finder</p>
+                                        <p th:unless="${fromFinder}" class="truncate text-xs text-muted" th:text="${app.email}">Email</p></div>
+                                </div>
+                            </td>
+                            <td class="px-5 py-4" data-label="Plan" th:text="${app.product.name}">Product</td>
                             <td class="px-5 py-4" data-label="Status"><span class="status-badge" th:classappend="'status-' + ${#strings.toLowerCase(app.status)}" th:text="${app.status}">SUBMITTED</span></td>
-                            <td class="whitespace-nowrap px-5 py-4 text-muted" data-label="Created" th:text="${#temporals.format(app.createdAt, 'd MMM yyyy')}">Date</td>
+                            <td class="whitespace-nowrap px-5 py-4 text-muted" data-label="Submitted" th:with="at=${app.submittedAt != null ? app.submittedAt : app.createdAt}" th:text="${#temporals.format(at, 'yyyy-MM-dd') == #temporals.format(#temporals.createNow(), 'yyyy-MM-dd') ? 'Today' : #temporals.format(at, 'd MMM yyyy')}">Date</td>
                             <td class="px-5 py-4 text-right"><a th:href="@{/admin/applications/{id}(id=${app.id})}" class="btn btn-sm" th:classappend="${app.status.name() == 'SUBMITTED' or app.status.name() == 'UNDER_REVIEW'} ? 'btn-ink' : 'btn-outline'">Review</a></td>
                         </tr>
                     </tbody>
@@ -55,26 +86,41 @@
             </div>
         </section>
 
-        <section class="reveal card min-w-0 p-5" style="--i:1">
-            <div class="flex items-center justify-between gap-3">
-                <div><p class="eyebrow">Consultation requests</p><h2 class="mt-1 text-lg font-semibold">People wanting to speak to an advisor</h2></div>
-                <span class="chip chip-gold shrink-0"><span th:text="${newInquiries}">0</span> new</span>
-            </div>
-            <div th:if="${#lists.isEmpty(recentInquiries)}" class="mt-5 rounded-2xl bg-cream p-6 text-sm text-muted">No contact enquiries yet. Public contact form submissions will appear here.</div>
-            <ul class="mt-4 space-y-3">
-                <li th:each="inquiry : ${recentInquiries}">
-                    <a th:href="@{/admin/consultations/{id}(id=${inquiry.id})}" class="flex items-start gap-3 rounded-2xl bg-cream p-3 transition hover:bg-gold-soft">
-                        <span class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-xs font-semibold text-gold-deep shadow-card" th:text="${#strings.toUpperCase(#strings.substring(inquiry.fullName, 0, 1))}">A</span>
-                        <div class="min-w-0 flex-1">
-                            <p class="truncate text-sm font-medium" th:text="${inquiry.fullName}">Name</p>
-                            <p class="truncate text-xs text-muted" th:text="${inquiry.subject}">Subject</p>
-                        </div>
-                        <span class="status-badge !text-[10px]" th:classappend="'status-' + ${#strings.toLowerCase(inquiry.status)}" th:text="${inquiry.status}">NEW</span>
-                    </a>
-                </li>
-            </ul>
-            <a href="/admin/consultations" class="btn btn-outline btn-sm mt-4 w-full">Manage all consultations</a>
-        </section>
+        <div class="min-w-0 space-y-6">
+            <section class="reveal card p-5" style="--i:1">
+                <div class="flex items-center justify-between"><h2 class="text-lg font-semibold">Applications this week</h2><span class="text-sm text-muted" th:text="${stats.weekTotal() + ' total'}">0 total</span></div>
+                <div class="mt-6 flex h-36 items-end gap-3" role="img" th:attr="aria-label=${'Applications received in the last 7 days: ' + stats.weekTotal()}">
+                    <div th:each="d : ${stats.week}" class="flex h-full flex-1 flex-col items-center justify-end gap-1.5" th:title="${#temporals.format(d.date, 'EEE d MMM') + ': ' + d.count}">
+                        <span class="text-[11px] font-medium" th:classappend="${d.count == 0} ? 'text-muted/60' : ''" th:text="${d.count}">0</span>
+                        <div class="w-full overflow-hidden rounded-t-xl bg-cream-deep" th:style="${'height:' + (d.percent < 4 ? 4 : d.percent) + '%'}"><div class="bar-v h-full" th:classappend="${d.today} ? 'bg-gold' : 'bg-ink/80'" th:if="${d.count > 0}"></div></div>
+                        <span class="text-xs" th:classappend="${d.today} ? 'font-semibold' : 'text-muted'" th:text="${d.today ? 'Today' : d.label}">Mon</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="reveal card p-5" style="--i:2">
+                <div class="flex items-center justify-between gap-3">
+                    <h2 class="text-lg font-semibold">New consultations <span class="chip chip-gold ml-1 align-middle !text-[11px]"><span th:text="${newInquiries}">0</span> new</span></h2>
+                    <a href="/admin/consultations" class="shrink-0 text-sm font-medium text-gold-deep hover:underline">View all</a>
+                </div>
+                <div th:if="${#lists.isEmpty(recentInquiries)}" class="mt-5 rounded-2xl bg-cream p-6 text-sm text-muted">No contact enquiries yet. Public contact form submissions will appear here.</div>
+                <ul class="mt-4 space-y-3">
+                    <li th:each="inquiry : ${recentInquiries}" th:with="pref=${#strings.toLowerCase(inquiry.preferredContact ?: '')},finder=${inquiry.topic != null and #strings.startsWith(inquiry.topic, 'Plan Finder')}">
+                        <a th:href="@{/admin/consultations/{id}(id=${inquiry.id})}" class="flex items-start gap-3 rounded-2xl bg-cream p-3 transition hover:bg-gold-soft">
+                            <span class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
+                                  th:classappend="${#strings.contains(pref, 'whatsapp')} ? 'bg-ok-soft text-ok' : (${#strings.contains(pref, 'phone') or #strings.contains(pref, 'call')} ? 'bg-gold-soft text-gold-deep' : 'bg-info-soft text-info')">
+                                <i th:class="${#strings.contains(pref, 'whatsapp')} ? 'fa-brands fa-whatsapp' : (${#strings.contains(pref, 'phone') or #strings.contains(pref, 'call')} ? 'fa-solid fa-phone' : 'fa-regular fa-envelope')"></i>
+                            </span>
+                            <div class="min-w-0 flex-1">
+                                <p class="truncate text-sm font-medium"><span th:text="${inquiry.fullName}">Name</span> <span th:if="${finder}" class="ml-1 rounded-full bg-ink px-2 py-0.5 text-[10px] text-gold">Plan Finder</span></p>
+                                <p class="truncate text-xs text-muted" th:text="${inquiry.topic != null and !#strings.isEmpty(inquiry.topic) and !finder ? inquiry.topic : inquiry.subject}">Subject</p>
+                            </div>
+                            <span class="shrink-0 text-right text-[11px] text-muted"><span class="status-badge !text-[10px]" th:classappend="'status-' + ${#strings.toLowerCase(inquiry.status)}" th:text="${inquiry.status}">NEW</span><br><span th:text="${#temporals.format(inquiry.createdAt, 'd MMM')}">2 Nov</span></span>
+                        </a>
+                    </li>
+                </ul>
+            </section>
+        </div>
     </div>
 </main>
 <script>

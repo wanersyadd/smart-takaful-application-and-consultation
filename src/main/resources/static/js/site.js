@@ -159,6 +159,17 @@
     addEventListener('scroll', () => { if (!ticking) { requestAnimationFrame(onScroll); ticking = true; } }, { passive: true });
     onScroll();
 
+    // Subtle 3D tilt on plan cards (pointer devices only)
+    if (!reduce && matchMedia('(hover: hover)').matches) {
+      document.querySelectorAll('.tilt').forEach((card) => {
+        card.addEventListener('pointermove', (e) => {
+          const r = card.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
+          card.style.transform = `perspective(900px) rotateX(${-y * 5}deg) rotateY(${x * 6}deg) translateY(-6px)`;
+        });
+        card.addEventListener('pointerleave', () => { card.style.transform = ''; });
+      });
+    }
+
     // Mobile menu
     document.querySelectorAll('.page-menu-open').forEach((button) => button.addEventListener('click', () => {
       const menu = document.querySelector('.page-mobile-menu');

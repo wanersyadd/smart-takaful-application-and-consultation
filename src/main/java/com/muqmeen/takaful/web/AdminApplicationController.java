@@ -3,6 +3,7 @@ package com.muqmeen.takaful.web;
 import com.muqmeen.takaful.domain.ApplicationStatus;
 import com.muqmeen.takaful.domain.ConsultationApplication;
 import com.muqmeen.takaful.domain.Quotation;
+import com.muqmeen.takaful.service.AdminDashboardService;
 import com.muqmeen.takaful.service.ApplicationService;
 import com.muqmeen.takaful.service.ContactInquiryService;
 import com.muqmeen.takaful.service.PlanFinderService;
@@ -19,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
+import java.security.Principal;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,19 +33,22 @@ public class AdminApplicationController {
     private final QuotationService quotationService;
     private final ContactInquiryService contactInquiryService;
     private final PlanFinderService planFinderService;
+    private final AdminDashboardService adminDashboardService;
 
     public AdminApplicationController(ApplicationService applicationService,
                                       QuotationService quotationService,
                                       ContactInquiryService contactInquiryService,
-                                      PlanFinderService planFinderService) {
+                                      PlanFinderService planFinderService,
+                                      AdminDashboardService adminDashboardService) {
         this.applicationService = applicationService;
         this.quotationService = quotationService;
         this.contactInquiryService = contactInquiryService;
         this.planFinderService = planFinderService;
+        this.adminDashboardService = adminDashboardService;
     }
 
     @GetMapping("/dashboard")
-    public String dashboard(Model model) {
+    public String dashboard(Model model, Principal principal) {
         List<ConsultationApplication> applications = applicationService.listForAdmin();
         model.addAttribute("applications", applications);
         model.addAttribute("statuses", ApplicationStatus.values());
@@ -53,7 +59,17 @@ public class AdminApplicationController {
         model.addAttribute("paidApplications", countStatuses(applications, ApplicationStatus.PAID, ApplicationStatus.CLOSED));
         model.addAttribute("recentInquiries", contactInquiryService.recent());
         model.addAttribute("newInquiries", contactInquiryService.countNew());
+        model.addAttribute("stats", adminDashboardService.stats(applications));
+        model.addAttribute("greeting", greeting(LocalTime.now()));
+        model.addAttribute("adminName", principal != null ? principal.getName() : "Admin");
         return "admin/dashboard";
+    }
+
+    private static String greeting(LocalTime time) {
+        if (time.getHour() < 12) {
+            return "Good morning";
+        }
+        return time.getHour() < 18 ? "Good afternoon" : "Good evening";
     }
 
     @PostMapping("/applications/{id}/delete")

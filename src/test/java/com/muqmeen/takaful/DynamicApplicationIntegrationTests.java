@@ -627,6 +627,16 @@ class DynamicApplicationIntegrationTests {
                 .andExpect(status().isOk());
     }
 
+    @Test
+    void adminLinkOnlyShownToAdmins() throws Exception {
+        mockMvc.perform(get("/"))
+                .andExpect(content().string(not(containsString("href=\"/admin/dashboard\""))));
+        mockMvc.perform(get("/").with(user("user@example.com").roles("USER")))
+                .andExpect(content().string(not(containsString("href=\"/admin/dashboard\""))));
+        mockMvc.perform(get("/").with(user("admin").roles("ADMIN")))
+                .andExpect(content().string(containsString("href=\"/admin/dashboard\"")));
+    }
+
     private Product saveProduct(String name) {
         Product product = new Product();
         product.setName(name);
